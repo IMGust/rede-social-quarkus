@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import model.Post;
 import model.User;
+import repository.FollowersRepository;
 import repository.PostRespository;
 import repository.UserRepository;
 import java.util.List;
@@ -26,6 +27,9 @@ public class PostResource {
 
     @Inject
     PostRespository postRespository;
+
+    @Inject
+    FollowersRepository followersRepository;
 
     @POST
     @Transactional
@@ -44,11 +48,31 @@ public class PostResource {
     }
 
     @GET
-    public Response listPosts(@PathParam("userId") Long userId){
-        User user = userRepository.findById(userId);
-        if(user == null){
+    public Response listPosts(@PathParam("userId") Long userId,
+                              @HeaderParam("followerId") Long followerId){
+            User user = userRepository.findById(userId);
+            if(user == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+            User follower = userRepository.findById(followerId);
+            boolean follows = followersRepository.follows(follower, user);
+            if(!follows){
+
+                return Response.status(Response.Status.FORBIDDEN).entity("You can't see these posts")
+                        .build();
+            }
+
+            if(followerId == null){
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("You forgot the header followerId").build();
+            }
+            if(follower == null){
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Inexistent followerId").build();
+            }
+
+
 
             PanacheQuery<Post> query = postRespository.find("user",
                     Sort.by("dateTime", Sort.Direction.Descending), user);
