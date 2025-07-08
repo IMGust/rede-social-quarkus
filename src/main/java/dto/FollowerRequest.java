@@ -3,7 +3,7 @@ package dto;
 import lombok.Data;
 
 @Data
-public class FollowRequest {
+public class FollowerRequest {
 
     private Long followersId;
 

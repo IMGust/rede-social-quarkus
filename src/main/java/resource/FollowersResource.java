@@ -1,6 +1,6 @@
     package resource;
 
-    import dto.FollowRequest;
+    import dto.FollowerRequest;
     import dto.FollowerResponse;
     import dto.FollowersPerUserResponse;
     import jakarta.inject.Inject;
@@ -28,7 +28,7 @@
             @Transactional
             @PUT
             public Response followUer(
-                    @PathParam("userId") Long userId, FollowRequest request){
+                    @PathParam("userId") Long userId, FollowerRequest request){
 
                     if(userId.equals(request.getFollowersId())){
 
@@ -82,23 +82,9 @@
                     if(user == null) {
                     return Response.status(Response.Status.NOT_FOUND).build();
                 }
-
                     followersRepository.deleteByFollowerAndUser(followerId, userId);
 
-
-                    return Response.status(Response.Status.NOT_FOUND).build();
+                        return Response.noContent().build();
 
             }
-
-
-
-
-
-
-
-
-
-
-
-
     }

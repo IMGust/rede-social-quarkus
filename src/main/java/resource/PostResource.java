@@ -49,37 +49,37 @@ public class PostResource {
 
     @GET
     public Response listPosts(@PathParam("userId") Long userId,
-                              @HeaderParam("followerId") Long followerId){
-            User user = userRepository.findById(userId);
-            if(user == null){
+                              @HeaderParam("followerId") Long followerId) {
+
+        User user = userRepository.findById(userId);
+        if (user == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-            User follower = userRepository.findById(followerId);
-            boolean follows = followersRepository.follows(follower, user);
-            if(!follows){
 
-                return Response.status(Response.Status.FORBIDDEN).entity("You can't see these posts")
-                        .build();
-            }
+        if (followerId == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("You forgot the header followerId").build();
+        }
 
-            if(followerId == null){
+        User follower = userRepository.findById(followerId);
+        if (follower == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Inexistent followerId").build();
+        }
 
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("You forgot the header followerId").build();
-            }
-            if(follower == null){
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Inexistent followerId").build();
-            }
+        boolean follows = followersRepository.follows(follower, user);
+        if (!follows) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("You can't see these posts").build();
+        }
 
-
-
-            PanacheQuery<Post> query = postRespository.find("user",
-                    Sort.by("dateTime", Sort.Direction.Descending), user);
-            List<Post> list = query.list();
-            list.stream().map(PostResponse::fromEntity).
-                    collect(Collectors.toList());
+        PanacheQuery<Post> query = postRespository.find(
+                "user", Sort.by("dateTime", Sort.Direction.Descending), user);
+        List<PostResponse> list = query.stream()
+                .map(PostResponse::fromEntity)
+                .collect(Collectors.toList());
 
         return Response.ok(list).build();
     }
+
 }
